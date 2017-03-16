@@ -22,7 +22,9 @@ $input = json_decode(file_get_contents('php://input'), true);
 //   echo false;
 // }
 
-file_put_contents('fb_response.txt', file_get_contents('php://input'));
+$response = json_decode(file_get_contents('php://input'));
+
+file_put_contents('fb_response.txt', $response);
 
 $senderId = $input['entry'][0]['messaging'][0]['sender']['id'];
 $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
@@ -31,6 +33,7 @@ $answer = 'test';
 
 $welcomeMessage = [
     'czesc',
+    'cześć',
     'witam',
     'siema',
     'elo',
@@ -45,19 +48,18 @@ $goodbyeMessage = [
 ];
 
 if (in_array(strtolower($messageText), $goodbyeMessage)) {
-    $answer = 'Do zobaczenia';
+    $answer = $goodbyeMessage[rand(0, $goodbyeMessage - 1)];
 } elseif (in_array(strtolower($messageText), $welcomeMessage)) {
-    $answer = "Cześć";
+    $answer = $welcomeMessage[rand(0, count($welcomeMessage) - 1)];
 } elseif ($messageText == 'test') {
-    $answer = 'przestań pisać do mnie test!!!';
+    $answer = 'przestań pisać test!!!';
 } else {
     $answer = "Niestety nie rozumiem. Aby rozpocząć rozmowę napisz 'witaj'.";
 }
 
 $response = [
     'recipient' => [ 'id' => $senderId ],
-    'message' => [ 'text' => $answer ],
-    'confirmation' => $confirmation
+    'message' => [ 'text' => $answer ]
 ];
 $ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
 curl_setopt($ch, CURLOPT_POST, 1);
