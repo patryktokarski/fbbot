@@ -58,9 +58,9 @@ if (in_array(strtolower($messageText), $goodbyeMessage)) {
 $response = [
     'recipient' => [ 'id' => $senderId ],
     'message' => [ 'text' => $answer,
-                   'buttons' => array('type' => 'postback',
+                   'buttons' => ['type' => 'postback',
                                       'url' => 'https://www.google.pl',
-                                      'title' => 'button')]
+                                      'title' => 'button']]
 ];
 
 $ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
