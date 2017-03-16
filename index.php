@@ -57,8 +57,12 @@ if (in_array(strtolower($messageText), $goodbyeMessage)) {
 
 $response = [
     'recipient' => [ 'id' => $senderId ],
-    'message' => [ 'text' => $answer ]
+    'message' => [ 'text' => $answer,
+                   'buttons' => array('type' => 'postback',
+                                      'url' => 'https://www.google.pl',
+                                      'title' => 'button')]
 ];
+
 $ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($response));
