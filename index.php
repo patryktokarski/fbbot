@@ -9,22 +9,55 @@ if ($_REQUEST['hub_verify_token'] === $hubVerifyToken) {
     exit;
 }
 
-
 // handle bot's anwser
 $input = json_decode(file_get_contents('php://input'), true);
+
+
+// save fb response to text file
+// if (is_file('fbresponse.txt')) {
+//   $confirmation = true;
+//   echo true;
+// } else {
+//   $confirmation = false;
+//   echo false;
+// }
+
+file_put_contents('fb_response.txt', file_get_contents('php://input'));
 
 $senderId = $input['entry'][0]['messaging'][0]['sender']['id'];
 $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
 
+$answer = 'test';
 
-$answer = "Niestety nie rozumiem. Aby rozpocząć rozmowę napisz 'witaj'.";
-if($messageText == "witaj") {
+$welcomeMessage = [
+    'czesc',
+    'witam',
+    'siema',
+    'elo',
+    'siemanko',
+    'witaj'
+];
+
+$goodbyeMessage = [
+    'do widzenia',
+    'nara',
+    'do zobaczenia'
+];
+
+if (in_array(strtolower($messageText), $goodbyeMessage)) {
+    $answer = 'Do zobaczenia';
+} elseif (in_array(strtolower($messageText), $welcomeMessage)) {
     $answer = "Cześć";
+} elseif ($messageText == 'test') {
+    $answer = 'przestań pisać do mnie test!!!';
+} else {
+    $answer = "Niestety nie rozumiem. Aby rozpocząć rozmowę napisz 'witaj'.";
 }
 
 $response = [
     'recipient' => [ 'id' => $senderId ],
-    'message' => [ 'text' => $answer ]
+    'message' => [ 'text' => $answer ],
+    'confirmation' => $confirmation
 ];
 $ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
 curl_setopt($ch, CURLOPT_POST, 1);
