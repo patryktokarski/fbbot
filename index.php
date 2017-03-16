@@ -12,19 +12,7 @@ if ($_REQUEST['hub_verify_token'] === $hubVerifyToken) {
 // handle bot's anwser
 $input = json_decode(file_get_contents('php://input'), true);
 
-
-// save fb response to text file
-// if (is_file('fbresponse.txt')) {
-//   $confirmation = true;
-//   echo true;
-// } else {
-//   $confirmation = false;
-//   echo false;
-// }
-
-$response = json_decode(file_get_contents('php://input'));
-
-file_put_contents('fb_response.txt', $response);
+file_put_contents('fb_response.txt', $input);
 
 $senderId = $input['entry'][0]['messaging'][0]['sender']['id'];
 $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
@@ -40,6 +28,11 @@ $welcomeMessage = [
     'siemanko',
     'witaj'
 ];
+$welcomeMessageResponse = [
+    'Witaj',
+    'Cześć',
+    'Dzień dobry',
+];
 
 $goodbyeMessage = [
     'do widzenia',
@@ -47,10 +40,15 @@ $goodbyeMessage = [
     'do zobaczenia'
 ];
 
+$goodbyeMessageResponse = [
+    'Do zobaczenia',
+    'Do widzenia'
+];
+
 if (in_array(strtolower($messageText), $goodbyeMessage)) {
-    $answer = $goodbyeMessage[rand(0, $goodbyeMessage - 1)];
+    $answer = $goodbyeMessageResponse[rand(0, count($goodbyeMessageResponse) - 1)];
 } elseif (in_array(strtolower($messageText), $welcomeMessage)) {
-    $answer = $welcomeMessage[rand(0, count($welcomeMessage) - 1)];
+    $answer = $welcomeMessageResponse[rand(0, count($welcomeMessageResponse) - 1)];
 } elseif ($messageText == 'test') {
     $answer = 'przestań pisać test!!!';
 } else {
