@@ -19,6 +19,28 @@ $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
 
 $answer = 'test';
 
+/*
+ * get user data
+ */
+
+$user_info_url = "https://graph.facebook.com/v2.6/".$senderId."?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=".$accessToken;
+$ch = curl_init();
+
+curl_setopt($ch, CURLOPT_URL, $user_info_url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+$result = curl_exec($ch);
+
+curl_close ($ch);
+$user = json_decode($result);
+
+var_dump($user);
+
+
+
+
+
+
 $welcomeMessage = [
     'czesc',
     'cześć',
@@ -45,32 +67,115 @@ $goodbyeMessageResponse = [
     'Do widzenia'
 ];
 
-if (in_array(strtolower($messageText), $goodbyeMessage)) {
-    $answer = $goodbyeMessageResponse[rand(0, count($goodbyeMessageResponse) - 1)];
-} elseif (in_array(strtolower($messageText), $welcomeMessage)) {
-    $answer = $welcomeMessageResponse[rand(0, count($welcomeMessageResponse) - 1)];
-} elseif ($messageText == 'test') {
-    $answer = 'przestań pisać test!!!';
-} else {
-    $answer = "Niestety nie rozumiem. Aby rozpocząć rozmowę napisz 'witaj'.";
+function prepareResponse ($senderId, $answer) {
+    $response = [
+        'recipient' => [ 'id' => $senderId ],
+        'message' => [ 'text' => $answer]
+    ];
+    return $response;
 }
 
-$response = [
-    'recipient' => [ 'id' => $senderId ],
-    'message' => [ 'text' => $answer],
-    'buttons' => [
-        'type' => 'postback',
-        'url' => 'https://www.google.pl',
-        'title' => 'button'
-    ]
+if (in_array(strtolower($messageText), $goodbyeMessage)) {
+    $answer = $goodbyeMessageResponse[rand(0, count($goodbyeMessageResponse) - 1)];
+    $response = prepareResponse($senderId, $answer);
+} elseif (in_array(strtolower($messageText), $welcomeMessage)) {
+    $answer = $welcomeMessageResponse[rand(0, count($welcomeMessageResponse) - 1)];
+    $response = prepareResponse($senderId, $answer);
+} elseif ($messageText == 'test') {
+    $answer = 'przestań pisać test!!!';
+    $response = prepareResponse($senderId, $answer);
+} elseif ($messageText == 'opcje' || $messageText == 'pomoc' || $messageText == 'help') {
+    $response = [
+        'recipient' => [ 'id' => $senderId ],
+        'message' => [ 'attachment' => ['type' => 'template',
+            'payload' => ['template_type' =>'button',
+                'text' => 'wybierz coś',
+                'buttons' => [[
+                    'type' => 'web_url',
+                    'url' => 'https://www.google.pl',
+                    'title' => 'go to google'],
+                    [
+                        'type' => 'web_url',
+                        'url' => 'https://www.onet.pl',
+                        'title' => 'go to onet']]]]]];
+} elseif ($messageText == 'regulamin') {
+    $response = [
+        'recipient' => ['id' => $senderId],
+        'message' => ['attachment' => ['type' => 'file',
+                                       'payload' => ['url' => 'https://fbbot-patryktok137412.codeanyapp.com/regulamin.txt']]]
+    ];
+} else {
+    $answer = "Niestety nie rozumiem. Aby rozpocząć rozmowę napisz 'witaj'. Aby poznać opcje napisz 'help'.";
+    $response = prepareResponse($senderId, $answer);
+}
 
-];
+//if (in_array(strtolower($messageText), $words->goodbyeMessage)) {
+//
+//    $answer = $words->goodbyeMessageResponse[rand(0, count($words->goodbyeMessageResponse) - 1)];
+//    $response = prepareResponse($senderId, $answer);
+//
+//} elseif (in_array(strtolower($messageText), $words->welcomeMessage)) {
+//
+//    $answer = $words->welcomeMessageResponse[rand(0, count($words->welcomeMessageResponse) - 1)];
+//    $response = prepareResponse($senderId, $answer);
+//
+//} elseif ($messageText == 'test') {
+//    $answer = 'test';
+//    $response = prepareResponse($senderId, $answer);
+//} elseif (in_array(strtolower($messageText), $words->help)) {
+//    $response = [
+//        'recipient' => [ 'id' => $senderId ],
+//        'message' => [ 'attachment' => ['type' => 'template',
+//            'payload' => ['template_type' =>'button',
+//                'text' => 'wybierz coś',
+//                'buttons' => [[
+//                    'type' => 'web_url',
+//                    'url' => 'https://www.google.pl',
+//                    'title' => 'go to google'],
+//                    [
+//                        'type' => 'web_url',
+//                        'url' => 'https://www.onet.pl',
+//                        'title' => 'go to onet']]]]]];
+//} elseif (in_array(strtolower($messageText), $words->regulations)) {
+//
+//    $response = [
+//        'recipient' => ['id' => $senderId],
+//        'message' => ['attachment' => ['type' => 'file',
+//            'payload' => ['url' => 'https://fbbot-patryktok137412.codeanyapp.com/regulamin.txt']]]
+//    ];
+//
+//} elseif ($messageText == 'kiedy otwarte' || $messageText == 'kiedy otwarte?' || $messageText == 'godziny otwarcia') {
+//
+//    $answer = 'Zapraszamy od pon do pt w godzinach 8 - 16.';
+//    $response = prepareResponse($senderId, $answer);
+//
+//} elseif ($messageText == 'fota') {
+//
+//    $response = [
+//        'recipient' => ['id' => $senderId],
+//        'message' => ['attachment' => ['type' => 'image',
+//            'payload' => ['url' => 'https://fbbot-patryktok137412.codeanyapp.com/asdf.jpg']]]
+//    ];
+//
+//} else {
+//    $answer = "Niestety nie rozumiem. Aby wybrać scenariusz rozmowy napisz 'help'. Aby pobrać regulamin napisz 'regulamin'.";
+//    $response = prepareResponse($senderId, $answer);
+//}
 
-$res = '{"recipient":{"id":"USER_ID"},"message":{"attachment":{"type":"template","payload":{"template_type":"button","text":"What do you want to do next?","buttons":[{"type":"web_url","url":"https://petersapparel.parseapp.com","title":"Show Website"},{"type":"postback","title":"Start Chatting","payload":"USER_DEFINED_PAYLOAD"}]}}}}';
+//     $word = new WordsSimilarity($words->welcomeMessage, $messageText);
+//     $check = $word->response();
+//     if($check['status']) {
+//         $answer = $welcomeMessageResponse[rand(0, count($welcomeMessageResponse) - 1)];
+//         $response = prepareResponse($senderId, $answer);
+//     } else {
+//         $response = prepareResponse($senderId, $check['message']);
+//     }
 
-$ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
+
+$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken;
+$ch = curl_init($url);
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $res);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($response));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_exec($ch);
 curl_close($ch);
